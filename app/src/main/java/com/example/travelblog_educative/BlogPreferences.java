@@ -10,8 +10,7 @@ public class BlogPreferences {
     private SharedPreferences preferences;
 
     BlogPreferences(Context context) {
-        preferences =
-                context.getSharedPreferences("travel-blog", Context.MODE_PRIVATE);
+        preferences = context.getSharedPreferences("travel-blog", Context.MODE_PRIVATE);
     }
 
     public boolean isLoggedIn() {
