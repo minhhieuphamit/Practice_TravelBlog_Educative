@@ -22,6 +22,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextInputLayout textPasswordInput;
     private Button loginButton;
     private ProgressBar progressBar;
+    private BlogPreferences preferences;
 
 
     @Override
@@ -47,6 +48,12 @@ public class LoginActivity extends AppCompatActivity {
                 .addTextChangedListener(createTextWatcher(textPasswordInput));
         progressBar = findViewById(R.id.progressBar);
 
+        preferences = new BlogPreferences(this);
+        if (preferences.isLoggedIn()) {
+            startMainActivity();
+            finish();
+            return;
+        }
     }
 
     private void onLoginClicked() {
@@ -91,15 +98,17 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void performLogin() {
+        preferences.setLoggedIn(true);
+
         textUsernameLayout.setEnabled(false);
         textPasswordInput.setEnabled(false);
         loginButton.setVisibility(View.INVISIBLE);
         progressBar.setVisibility(View.VISIBLE);
-        Handler handler = new Handler();
-        handler.postDelayed(() -> {
+
+        new Handler().postDelayed(() -> {
             startMainActivity();
             finish();
-        }, 2000);
+        }, 5000);
     }
 
     private void startMainActivity() {
