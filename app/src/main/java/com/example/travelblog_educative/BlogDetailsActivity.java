@@ -2,7 +2,9 @@ package com.example.travelblog_educative;
 
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
@@ -13,6 +15,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.example.travelblog_educative.http.*;
+import com.google.android.material.snackbar.Snackbar;
 
 
 import java.util.List;
@@ -28,6 +31,8 @@ public class BlogDetailsActivity extends AppCompatActivity {
     private RatingBar ratingBar;
     private ImageView imageAvatar;
     private ImageView imageMain;
+    private ProgressBar progressBar;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,6 +53,8 @@ public class BlogDetailsActivity extends AppCompatActivity {
         textDescription = findViewById(R.id.textDescription);
         ratingBar = findViewById(R.id.ratingBar);
 
+        progressBar = findViewById(R.id.progressBar);
+
         loadData();
     }
 
@@ -61,11 +68,15 @@ public class BlogDetailsActivity extends AppCompatActivity {
             @Override
             public void onError() {
                 // handle error
+                runOnUiThread(() -> showErrorSnackbar());
+
             }
         });
     }
 
+
     private void showData(Blog blog) {
+        progressBar.setVisibility(View.GONE);
         textTitle.setText(blog.getTitle());
         textDate.setText(blog.getDate());
         textAuthor.setText(blog.getAuthor().getName());
@@ -84,6 +95,18 @@ public class BlogDetailsActivity extends AppCompatActivity {
                 .transform(new CircleCrop())
                 .transition(DrawableTransitionOptions.withCrossFade())
                 .into(imageAvatar);
+    }
+
+    private void showErrorSnackbar() {
+        View rootView = findViewById(android.R.id.content);
+        Snackbar snackbar = Snackbar.make(rootView,
+                "Error during loading blog articles", Snackbar.LENGTH_INDEFINITE);
+        snackbar.setActionTextColor(getResources().getColor(R.color.orange500));
+        snackbar.setAction("Retry", v -> {
+            loadData();
+            snackbar.dismiss();
+        });
+        snackbar.show();
     }
 
 }
