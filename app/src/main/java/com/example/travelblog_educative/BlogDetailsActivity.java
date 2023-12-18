@@ -2,6 +2,7 @@ package com.example.travelblog_educative;
 
 
 import android.os.Bundle;
+import android.text.Html;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -33,7 +34,6 @@ public class BlogDetailsActivity extends AppCompatActivity {
     private ImageView imageMain;
     private ProgressBar progressBar;
 
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,7 +52,6 @@ public class BlogDetailsActivity extends AppCompatActivity {
         textViews = findViewById(R.id.textViews);
         textDescription = findViewById(R.id.textDescription);
         ratingBar = findViewById(R.id.ratingBar);
-
         progressBar = findViewById(R.id.progressBar);
 
         loadData();
@@ -67,13 +66,10 @@ public class BlogDetailsActivity extends AppCompatActivity {
 
             @Override
             public void onError() {
-                // handle error
                 runOnUiThread(() -> showErrorSnackbar());
-
             }
         });
     }
-
 
     private void showData(Blog blog) {
         progressBar.setVisibility(View.GONE);
@@ -82,8 +78,9 @@ public class BlogDetailsActivity extends AppCompatActivity {
         textAuthor.setText(blog.getAuthor().getName());
         textRating.setText(String.valueOf(blog.getRating()));
         textViews.setText(String.format("(%d views)", blog.getViews()));
-        textDescription.setText(blog.getDescription());
+        textDescription.setText(Html.fromHtml(blog.getDescription()));
         ratingBar.setRating(blog.getRating());
+        ratingBar.setVisibility(View.VISIBLE);
 
         Glide.with(this)
                 .load(blog.getImage())
@@ -99,14 +96,14 @@ public class BlogDetailsActivity extends AppCompatActivity {
 
     private void showErrorSnackbar() {
         View rootView = findViewById(android.R.id.content);
-        Snackbar snackbar = Snackbar.make(rootView,
-                "Error during loading blog articles", Snackbar.LENGTH_INDEFINITE);
+        Snackbar snackbar = Snackbar.make(rootView, "Error during loading blog articles", Snackbar.LENGTH_INDEFINITE);
         snackbar.setActionTextColor(getResources().getColor(R.color.orange500));
         snackbar.setAction("Retry", v -> {
             loadData();
             snackbar.dismiss();
         });
         snackbar.show();
-    }
 
+
+    }
 }
