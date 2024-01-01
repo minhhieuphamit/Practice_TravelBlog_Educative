@@ -3,9 +3,13 @@ package com.example.travelblog_educative.http;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Blog implements Parcelable {
+
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy");
 
     private String id;
     private Author author;
@@ -62,6 +66,17 @@ public class Blog implements Parcelable {
 
     public String getDate() {
         return date;
+    }
+
+    public Long getDateMillis() {
+        try {
+            Date date = dateFormat.parse(getDate());
+            return date != null ? date.getTime() : null;
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     public String getImage() {
