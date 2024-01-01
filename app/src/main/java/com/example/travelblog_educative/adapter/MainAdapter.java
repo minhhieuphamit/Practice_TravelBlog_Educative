@@ -17,6 +17,10 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.example.travelblog_educative.R;
 import com.example.travelblog_educative.http.Blog;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class MainAdapter extends ListAdapter<Blog, MainAdapter.MainViewHolder> {
 
     public interface OnItemClickListener {
@@ -43,6 +47,17 @@ public class MainAdapter extends ListAdapter<Blog, MainAdapter.MainViewHolder> {
         holder.bindTo(getItem(position));
     }
 
+    public void sortByTitle() {
+        List<Blog> currentList = new ArrayList<>(getCurrentList());
+        Collections.sort(currentList, (o1, o2) -> o1.getTitle().compareTo(o2.getTitle()));
+        submitList(currentList);
+    }
+
+    public void sortByDate() {
+        List<Blog> currentList = new ArrayList<>(getCurrentList());
+        Collections.sort(currentList, (o1, o2) -> o2.getDateMillis().compareTo(o1.getDateMillis()));
+        submitList(currentList);
+    }
 
     static class MainViewHolder extends RecyclerView.ViewHolder {
 
@@ -64,27 +79,20 @@ public class MainAdapter extends ListAdapter<Blog, MainAdapter.MainViewHolder> {
             textTitle.setText(blog.getTitle());
             textDate.setText(blog.getDate());
 
-            Glide.with(itemView)
-                    .load(blog.getAuthor().getAvatarURL())
-                    .transform(new CircleCrop())
-                    .transition(DrawableTransitionOptions.withCrossFade())
-                    .into(imageAvatar);
+            Glide.with(itemView).load(blog.getAuthor().getAvatarURL()).transform(new CircleCrop()).transition(DrawableTransitionOptions.withCrossFade()).into(imageAvatar);
         }
 
     }
 
-    private static final DiffUtil.ItemCallback<Blog> DIFF_CALLBACK =
-            new DiffUtil.ItemCallback<Blog>() {
-                @Override
-                public boolean areItemsTheSame(@NonNull Blog oldData,
-                                               @NonNull Blog newData) {
-                    return oldData.getId().equals(newData.getId());
-                }
+    private static final DiffUtil.ItemCallback<Blog> DIFF_CALLBACK = new DiffUtil.ItemCallback<Blog>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull Blog oldData, @NonNull Blog newData) {
+            return oldData.getId().equals(newData.getId());
+        }
 
-                @Override
-                public boolean areContentsTheSame(@NonNull Blog oldData,
-                                                  @NonNull Blog newData) {
-                    return oldData.equals(newData);
-                }
-            };
+        @Override
+        public boolean areContentsTheSame(@NonNull Blog oldData, @NonNull Blog newData) {
+            return oldData.equals(newData);
+        }
+    };
 }
