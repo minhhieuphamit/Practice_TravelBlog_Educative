@@ -12,11 +12,18 @@ import com.example.travelblog_educative.adapter.MainAdapter;
 import com.example.travelblog_educative.http.Blog;
 import com.example.travelblog_educative.http.BlogArticlesCallback;
 import com.example.travelblog_educative.http.BlogHttpClient;
+import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final int SORT_TITLE = 0;
+    private static final int SORT_DATE = 1;
+
+    private int currentSort = SORT_DATE;
 
     private MainAdapter adapter;
     private SwipeRefreshLayout refreshLayout;
@@ -26,8 +33,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        adapter = new MainAdapter(blog ->
-                BlogDetailsActivity.startBlogDetailsActivity(this, blog));
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.sort) {
+                onSortClicked();
+            }
+            return false;
+        });
+
+        adapter = new MainAdapter(blog -> BlogDetailsActivity.startBlogDetailsActivity(this, blog));
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -39,6 +53,23 @@ public class MainActivity extends AppCompatActivity {
         loadData();
     }
 
+    private void onSortClicked() {
+        String[] items = {"Title", "Date"};
+        new MaterialAlertDialogBuilder(this).setTitle("Sort order").setSingleChoiceItems(items, currentSort, (dialog, which) -> {
+            dialog.dismiss();
+            currentSort = which;
+            sortData();
+        }).show();
+    }
+
+    private void sortData() {
+        if (currentSort == SORT_TITLE) {
+            adapter.sortByTitle();
+        } else if (currentSort == SORT_DATE) {
+            adapter.sortByDate();
+        }
+    }
+
     private void loadData() {
         refreshLayout.setRefreshing(true);
         BlogHttpClient.INSTANCE.loadBlogArticles(new BlogArticlesCallback() {
@@ -47,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     refreshLayout.setRefreshing(false);
                     adapter.submitList(blogList);
+                    sortData();
                 });
             }
 
