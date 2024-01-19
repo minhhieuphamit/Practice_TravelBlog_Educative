@@ -66,13 +66,13 @@ public class MainAdapter extends ListAdapter<Blog, MainAdapter.MainViewHolder> {
     }
 
     public void sortByTitle() {
-        List<Blog> currentList = new ArrayList<>(getCurrentList());
+        List<Blog> currentList = new ArrayList<>(originalList);
         Collections.sort(currentList, (o1, o2) -> o1.getTitle().compareTo(o2.getTitle()));
         submitList(currentList);
     }
 
     public void sortByDate() {
-        List<Blog> currentList = new ArrayList<>(getCurrentList());
+        List<Blog> currentList = new ArrayList<>(originalList);
         Collections.sort(currentList, (o1, o2) -> o2.getDateMillis().compareTo(o1.getDateMillis()));
         submitList(currentList);
     }
@@ -105,7 +105,7 @@ public class MainAdapter extends ListAdapter<Blog, MainAdapter.MainViewHolder> {
     private static final DiffUtil.ItemCallback<Blog> DIFF_CALLBACK = new DiffUtil.ItemCallback<Blog>() {
         @Override
         public boolean areItemsTheSame(@NonNull Blog oldData, @NonNull Blog newData) {
-            return oldData.getId().equals(newData.getId());
+            return oldData.getId() == newData.getId();
         }
 
         @Override
