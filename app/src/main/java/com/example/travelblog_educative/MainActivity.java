@@ -14,6 +14,8 @@ import com.example.travelblog_educative.adapter.MainAdapter;
 import com.example.travelblog_educative.http.Blog;
 import com.example.travelblog_educative.http.BlogArticlesCallback;
 import com.example.travelblog_educative.http.BlogHttpClient;
+import com.example.travelblog_educative.repository.BlogRepository;
+import com.example.travelblog_educative.repository.DataFromNetworkCallback;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
@@ -29,11 +31,14 @@ public class MainActivity extends AppCompatActivity {
 
     private MainAdapter adapter;
     private SwipeRefreshLayout refreshLayout;
+    private BlogRepository repository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        repository = new BlogRepository(getApplicationContext());
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setOnMenuItemClickListener(item -> {
@@ -58,25 +63,29 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        adapter = new MainAdapter(blog -> BlogDetailsActivity.startBlogDetailsActivity(this, blog));
+        adapter = new MainAdapter(blog ->
+                BlogDetailsActivity.startBlogDetailsActivity(this, blog));
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
         refreshLayout = findViewById(R.id.refresh);
-        refreshLayout.setOnRefreshListener(this::loadData);
+        refreshLayout.setOnRefreshListener(this::loadDataFromNetwork);
 
-        loadData();
+        loadDataFromDatabase();
+        loadDataFromNetwork();
     }
 
     private void onSortClicked() {
         String[] items = {"Title", "Date"};
-        new MaterialAlertDialogBuilder(this).setTitle("Sort order").setSingleChoiceItems(items, currentSort, (dialog, which) -> {
-            dialog.dismiss();
-            currentSort = which;
-            sortData();
-        }).show();
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Sort order")
+                .setSingleChoiceItems(items, currentSort, (dialog, which) -> {
+                    dialog.dismiss();
+                    currentSort = which;
+                    sortData();
+                }).show();
     }
 
     private void sortData() {
@@ -87,15 +96,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void loadData() {
+    private void loadDataFromDatabase() {
+        repository.loadDataFromDatabase(blogList -> runOnUiThread(() -> {
+            adapter.setData(blogList);
+            sortData();
+        }));
+    }
+
+    private void loadDataFromNetwork() {
         refreshLayout.setRefreshing(true);
-        BlogHttpClient.INSTANCE.loadBlogArticles(new BlogArticlesCallback() {
+
+        repository.loadDataFromNetwork(new DataFromNetworkCallback() {
             @Override
             public void onSuccess(List<Blog> blogList) {
                 runOnUiThread(() -> {
-                    refreshLayout.setRefreshing(false);
                     adapter.setData(blogList);
                     sortData();
+                    refreshLayout.setRefreshing(false);
                 });
             }
 
@@ -114,9 +131,10 @@ public class MainActivity extends AppCompatActivity {
         Snackbar snackbar = Snackbar.make(rootView, "Error during loading blog articles", Snackbar.LENGTH_INDEFINITE);
         snackbar.setActionTextColor(getResources().getColor(R.color.orange500));
         snackbar.setAction("Retry", v -> {
-            loadData();
+            loadDataFromNetwork();
             snackbar.dismiss();
         });
         snackbar.show();
     }
+
 }
